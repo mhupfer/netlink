@@ -11,6 +11,7 @@ anyhow = "1.0.31"
 #bytes = "1.0"
 byteorder = "1.3.2"
 #log = "0.4.8"
-netlink-packet-core = "0.4"
+#netlink-packet-core = "0.4"
+netlink-packet-core = { path = "../netlink-packet-core"}
 netlink-packet-utils = "0.5"
 #netlink-proto = { default-features = false, version = "0.9" }

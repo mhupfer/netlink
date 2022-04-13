@@ -95,7 +95,7 @@ where
 
         let header = <NetlinkHeader as Parseable<NetlinkBuffer<&'buffer B>>>::parse(buf)
             .context("failed to parse netlink header")?;
-
+            
         let bytes = buf.payload();
         let payload = match header.message_type {
             NLMSG_ERROR => {
@@ -109,7 +109,7 @@ where
                 }
             }
             NLMSG_NOOP => Noop,
-            NLMSG_DONE => Done,
+            //NLMSG_DONE => Done,
             NLMSG_OVERRUN => Overrun(bytes.to_vec()),
             message_type => {
                 let inner_msg = I::deserialize(&header, bytes).context(format!(

@@ -521,7 +521,7 @@ impl NetlinkDeserializable for ConnectorResponse {
 /************************************************/
 impl<'a, T: AsRef<[u8]> + ?Sized> ParseableParametrized<ConnectorResponseBuffer<&'a T>, u16> for ConnectorResponse 
 {
-    fn parse_with_param(buf: &ConnectorResponseBuffer<&'a T>, message_type: u16) -> Result<Self, DecodeError>
+    fn parse_with_param(buf: &ConnectorResponseBuffer<&'a T>, _message_type: u16) -> Result<Self, DecodeError>
     {
         let what = buf.read_u32(size_of::<cn_msg>());
         let offs = size_of::<cn_msg>() + 16;
