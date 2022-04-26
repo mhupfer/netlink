@@ -2,6 +2,7 @@
 
 members = [
     "netlink-sys",
+    "netlink-packet-connector",
     "netlink-packet-core",
     "netlink-packet-utils",
     "netlink-packet-generic",
@@ -22,6 +23,7 @@ members = [
 # omit fuzz projects
 default-members = [
     "netlink-sys",
+    "netlink-packet-connector",
     "netlink-packet-core",
     "netlink-packet-utils",
     "netlink-packet-generic",
@@ -39,6 +41,7 @@ default-members = [
 
 [patch.crates-io]
 netlink-sys = { path = "netlink-sys" }
+netlink-packet-connector = { path = "netlink-packet-connector" }
 netlink-packet-core = { path = "netlink-packet-core" }
 netlink-packet-utils = { path = "netlink-packet-utils" }
 netlink-packet-generic = { path = "netlink-packet-generic" }
