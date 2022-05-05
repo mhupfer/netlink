@@ -109,7 +109,8 @@ where
                 }
             }
             NLMSG_NOOP => Noop,
-            //NLMSG_DONE => Done,
+            /* TODO: improve bugfix */
+            NLMSG_DONE if header.length as usize == std::mem::size_of::<NetlinkHeader>() + 4 => Done,
             NLMSG_OVERRUN => Overrun(bytes.to_vec()),
             message_type => {
                 let inner_msg = I::deserialize(&header, bytes).context(format!(
