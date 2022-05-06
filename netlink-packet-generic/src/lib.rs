@@ -72,6 +72,7 @@ pub use self::buffer::GenlBuffer;
 pub mod constants;
 
 pub mod ctrl;
+pub mod taskstats;
 
 pub mod header;
 pub use self::header::GenlHeader;
