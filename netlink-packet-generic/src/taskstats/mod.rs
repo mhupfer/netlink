@@ -15,7 +15,7 @@ pub mod nlas;
 
 /// Command code definition 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum TaskStatsCmd {
+pub enum TaskStatsCmds {
     /// user->kernel request/get-response
 	Get,
     /// kernel->user event
@@ -25,9 +25,9 @@ pub enum TaskStatsCmd {
 pub const TASKSTATS_CMD_GET: u8 = 1;
 pub const TASKSTATS_CMD_NEW: u8 = 2;
 
-impl From<TaskStatsCmd> for u8 {
-    fn from(cmd: TaskStatsCmd) -> u8 {
-        use TaskStatsCmd::*;
+impl From<TaskStatsCmds> for u8 {
+    fn from(cmd: TaskStatsCmds) -> u8 {
+        use TaskStatsCmds::*;
         match cmd {
             Get => TASKSTATS_CMD_GET,
             New => TASKSTATS_CMD_NEW,
@@ -35,11 +35,11 @@ impl From<TaskStatsCmd> for u8 {
     }
 }
 
-impl TryFrom<u8> for TaskStatsCmd {
+impl TryFrom<u8> for TaskStatsCmds {
     type Error = DecodeError;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        use TaskStatsCmd::*;
+        use TaskStatsCmds::*;
         Ok(match value {
             TASKSTATS_CMD_GET => Get,
             TASKSTATS_CMD_NEW => New,
@@ -56,16 +56,16 @@ impl TryFrom<u8> for TaskStatsCmd {
 
 /// Payload of taskstats
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct TaskStats {
+pub struct TaskStatsCmd {
     /// Command code of this message
-    pub cmd: TaskStatsCmd,
+    pub cmd: TaskStatsCmds,
     /// Netlink attributes in this message
     pub nlas: Vec<TaskStatsCmdAttrs>,
     /// family id is not fixed
     pub family_id: u16
 }
 
-impl GenlFamily for TaskStats {
+impl GenlFamily for TaskStatsCmd {
     fn family_name() -> &'static str {
         "taskstats"
     }
@@ -83,7 +83,7 @@ impl GenlFamily for TaskStats {
     }
 }
 
-impl Emitable for TaskStats {
+impl Emitable for TaskStatsCmd {
     fn emit(&self, buffer: &mut [u8]) {
         self.nlas.as_slice().emit(buffer)
     }
@@ -93,9 +93,9 @@ impl Emitable for TaskStats {
     }
 }
 
-impl ParseableParametrized<[u8], GenlHeader> for TaskStats {
+impl ParseableParametrized<[u8], GenlHeader> for TaskStatsCmd {
     fn parse_with_param(buf: &[u8], header: GenlHeader) -> Result<Self, DecodeError> {
-        Ok(Self {
+        Ok(TaskStatsCmd {
             cmd: header.cmd.try_into()?,
             nlas: parse_taskstat_nlas(buf)?,
             // the family is kind of dynamic, it
