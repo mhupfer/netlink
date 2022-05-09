@@ -17,16 +17,16 @@ pub const TASKSTATS_CMD_ATTR_REGISTER_CPUMASK: u16 = 3;
 pub const TASKSTATS_CMD_ATTR_DEREGISTER_CPUMASK: u16 = 4;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub enum TaskStatsAttrs {
+pub enum TaskStatsCmdAttrs {
     Pid(u32),
     TGid(u32),
     RegisterCPUMask(String),
     DeRegisterCPUMask(String),
 }
 
-impl Nla for TaskStatsAttrs {
+impl Nla for TaskStatsCmdAttrs {
     fn value_len(&self) -> usize {
-        use TaskStatsAttrs::*;
+        use TaskStatsCmdAttrs::*;
         match self {
             Pid(v) => size_of_val(v),
             TGid(v) => size_of_val(v),
@@ -36,7 +36,7 @@ impl Nla for TaskStatsAttrs {
     }
 
     fn kind(&self) -> u16 {
-        use TaskStatsAttrs::*;
+        use TaskStatsCmdAttrs::*;
         match self {
             Pid(_) => TASKSTATS_CMD_ATTR_PID,
             TGid(_) => TASKSTATS_CMD_ATTR_TGID,
@@ -46,7 +46,7 @@ impl Nla for TaskStatsAttrs {
     }
 
     fn emit_value(&self, buffer: &mut [u8]) {
-        use TaskStatsAttrs::*;
+        use TaskStatsCmdAttrs::*;
         match self {
             Pid(v) => NativeEndian::write_u32(buffer, *v),
             TGid(v) => NativeEndian::write_u32(buffer, *v),
@@ -62,7 +62,7 @@ impl Nla for TaskStatsAttrs {
     }
 }
 
-impl<'a, T: AsRef<[u8]> + ?Sized> Parseable<NlaBuffer<&'a T>> for TaskStatsAttrs {
+impl<'a, T: AsRef<[u8]> + ?Sized> Parseable<NlaBuffer<&'a T>> for TaskStatsCmdAttrs {
     fn parse(buf: &NlaBuffer<&'a T>) -> Result<Self, DecodeError> {
         let payload = buf.value();
         Ok(match buf.kind() {

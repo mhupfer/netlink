@@ -60,7 +60,7 @@ pub struct TaskStats {
     /// Command code of this message
     pub cmd: TaskStatsCmd,
     /// Netlink attributes in this message
-    pub nlas: Vec<TaskStatsAttrs>,
+    pub nlas: Vec<TaskStatsCmdAttrs>,
     /// family id is not fixed
     pub family_id: u16
 }
@@ -79,7 +79,7 @@ impl GenlFamily for TaskStats {
     }
 
     fn version(&self) -> u8 {
-        2
+        1
     }
 }
 
@@ -105,9 +105,9 @@ impl ParseableParametrized<[u8], GenlHeader> for TaskStats {
     }
 }
 
-fn parse_taskstat_nlas(buf: &[u8]) -> Result<Vec<TaskStatsAttrs>, DecodeError> {
+fn parse_taskstat_nlas(buf: &[u8]) -> Result<Vec<TaskStatsCmdAttrs>, DecodeError> {
     let nlas = NlasIterator::new(buf)
-        .map(|nla| nla.and_then(|nla| TaskStatsAttrs::parse(&nla)))
+        .map(|nla| nla.and_then(|nla| TaskStatsCmdAttrs::parse(&nla)))
         .collect::<Result<Vec<_>, _>>()
         .context("failed to parse control message attributes")?;
 
