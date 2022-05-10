@@ -15,7 +15,7 @@ pub mod nlas;
 
 /// Command code definition 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum TaskStatsCmds {
+pub enum TaskStatsCmdCodes {
     /// user->kernel request/get-response
 	Get,
     /// kernel->user event
@@ -25,9 +25,9 @@ pub enum TaskStatsCmds {
 pub const TASKSTATS_CMD_GET: u8 = 1;
 pub const TASKSTATS_CMD_NEW: u8 = 2;
 
-impl From<TaskStatsCmds> for u8 {
-    fn from(cmd: TaskStatsCmds) -> u8 {
-        use TaskStatsCmds::*;
+impl From<TaskStatsCmdCodes> for u8 {
+    fn from(cmd: TaskStatsCmdCodes) -> u8 {
+        use TaskStatsCmdCodes::*;
         match cmd {
             Get => TASKSTATS_CMD_GET,
             New => TASKSTATS_CMD_NEW,
@@ -35,11 +35,11 @@ impl From<TaskStatsCmds> for u8 {
     }
 }
 
-impl TryFrom<u8> for TaskStatsCmds {
+impl TryFrom<u8> for TaskStatsCmdCodes {
     type Error = DecodeError;
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
-        use TaskStatsCmds::*;
+        use TaskStatsCmdCodes::*;
         Ok(match value {
             TASKSTATS_CMD_GET => Get,
             TASKSTATS_CMD_NEW => New,
@@ -58,7 +58,7 @@ impl TryFrom<u8> for TaskStatsCmds {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TaskStatsCmd {
     /// Command code of this message
-    pub cmd: TaskStatsCmds,
+    pub cmd: TaskStatsCmdCodes,
     /// Netlink attributes in this message
     pub nlas: Vec<TaskStatsCmdAttrs>,
     /// family id is not fixed
@@ -97,7 +97,7 @@ impl ParseableParametrized<[u8], GenlHeader> for TaskStatsCmd {
     fn parse_with_param(buf: &[u8], header: GenlHeader) -> Result<Self, DecodeError> {
         Ok(TaskStatsCmd {
             cmd: header.cmd.try_into()?,
-            nlas: parse_taskstat_nlas(buf)?,
+            nlas: parse_taskstats_cmd_nlas(buf)?,
             // the family is kind of dynamic, it
             // must be set after parsing
             family_id: 0
@@ -105,9 +105,50 @@ impl ParseableParametrized<[u8], GenlHeader> for TaskStatsCmd {
     }
 }
 
-fn parse_taskstat_nlas(buf: &[u8]) -> Result<Vec<TaskStatsCmdAttrs>, DecodeError> {
+fn parse_taskstats_cmd_nlas(buf: &[u8]) -> Result<Vec<TaskStatsCmdAttrs>, DecodeError> {
     let nlas = NlasIterator::new(buf)
         .map(|nla| nla.and_then(|nla| TaskStatsCmdAttrs::parse(&nla)))
+        .collect::<Result<Vec<_>, _>>()
+        .context("failed to parse control message attributes")?;
+
+    Ok(nlas)
+}
+
+/*-------------------- Taskstats Events --------------------*/
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct TaskStatsEvent{
+    /// Command code of this message
+    pub cmd: TaskStatsCmdCodes,
+    /// Netlink attributes in this message
+    pub nlas: Vec<TaskStatsEventAttrs>,
+    // family id is not fixed
+    // pub family_id: u16
+}
+
+impl ParseableParametrized<[u8], GenlHeader> for TaskStatsEvent {
+    fn parse_with_param(buf: &[u8], header: GenlHeader) -> Result<Self, DecodeError> {
+        Ok(TaskStatsEvent {
+            cmd: header.cmd.try_into().and_then(|c|{ 
+                //Ok(TaskStatsCmdCodes::New)
+                match c{
+                    TaskStatsCmdCodes::New => Ok(c),
+                    x  => Err(DecodeError::from(format!(
+                        "Taskstat command must be 'new' not {:?}", x)))
+                }
+            })?,
+            nlas: parse_taskstats_event_nlas(buf)?,
+            // the family is kind of dynamic, it
+            // must be set after parsing
+            //family_id: 0
+        })
+    }
+}
+
+
+fn parse_taskstats_event_nlas(buf: &[u8]) -> Result<Vec<TaskStatsEventAttrs>, DecodeError> {
+    let nlas = NlasIterator::new(buf)
+        .map(|nla| nla.and_then(|nla| TaskStatsEventAttrs::parse(&nla)))
         .collect::<Result<Vec<_>, _>>()
         .context("failed to parse control message attributes")?;
 
