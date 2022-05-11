@@ -137,20 +137,10 @@ impl ParseableParametrized<[u8], GenlHeader> for TaskStatsEvent {
                         "Taskstat command must be 'new' not {:?}", x)))
                 }
             })?,
-            nlas: parse_taskstats_event_nlas(buf)?,
+            nlas: nlas::parse_taskstats_event_nlas(buf)?,
             // the family is kind of dynamic, it
             // must be set after parsing
             //family_id: 0
         })
     }
-}
-
-
-fn parse_taskstats_event_nlas(buf: &[u8]) -> Result<Vec<TaskStatsEventAttrs>, DecodeError> {
-    let nlas = NlasIterator::new(buf)
-        .map(|nla| nla.and_then(|nla| TaskStatsEventAttrs::parse(&nla)))
-        .collect::<Result<Vec<_>, _>>()
-        .context("failed to parse control message attributes")?;
-
-    Ok(nlas)
 }
