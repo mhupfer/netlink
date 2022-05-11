@@ -236,11 +236,14 @@ fn parse_sub_nlas(payload: &[u8]) -> Result< Statistics, DecodeError>
 }
 
 
+/********************************/
+/* parse_taskstats_event_nlas   */
+/********************************/
 pub fn parse_taskstats_event_nlas(buf: &[u8]) -> Result<Vec<TaskStatsEventAttrs>, DecodeError> {
     let nlas = NlasIterator::new(buf)
         .map(|nla| nla.and_then(|nla| TaskStatsEventAttrs::parse(&nla)))
         .collect::<Result<Vec<_>, _>>()
-        .context("failed to parse control message attributes")?;
+        .context("failed to parse taskstats message attributes")?;
 
     Ok(nlas)
 }
