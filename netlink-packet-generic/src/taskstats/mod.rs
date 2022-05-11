@@ -9,12 +9,13 @@ use crate::{traits::*, GenlHeader};
 use anyhow::Context;
 use netlink_packet_utils::{nla::NlasIterator, traits::*, DecodeError};
 use std::convert::{TryFrom, TryInto};
+use serde::{Serialize, Deserialize};
 
 /// Netlink attributes for this family
 pub mod nlas;
 
 /// Command code definition 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TaskStatsCmdCodes {
     /// user->kernel request/get-response
 	Get,
@@ -116,10 +117,12 @@ fn parse_taskstats_cmd_nlas(buf: &[u8]) -> Result<Vec<TaskStatsCmdAttrs>, Decode
 
 /*-------------------- Taskstats Events --------------------*/
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TaskStatsEvent{
     /// Command code of this message
     pub cmd: TaskStatsCmdCodes,
+    /// timestamp
+    pub timestamp_ns:   u64,
     /// Netlink attributes in this message
     pub nlas: Vec<TaskStatsEventAttrs>,
     // family id is not fixed
@@ -137,6 +140,20 @@ impl ParseableParametrized<[u8], GenlHeader> for TaskStatsEvent {
                         "Taskstat command must be 'new' not {:?}", x)))
                 }
             })?,
+            timestamp_ns :
+            {
+                let mut time = libc::timespec {
+                    tv_sec: 0,
+                    tv_nsec: 0,
+                };
+            
+                if unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC_COARSE, &mut time) } == 0
+                {
+                    (time.tv_sec * 1000000000 + time.tv_nsec) as u64
+                }
+                else
+                    {0}        
+            },
             nlas: nlas::parse_taskstats_event_nlas(buf)?,
             // the family is kind of dynamic, it
             // must be set after parsing

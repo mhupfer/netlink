@@ -10,6 +10,8 @@ use netlink_packet_utils::{
     DecodeError,
 };
 use std::mem::size_of_val;
+use serde::{Serialize, Deserialize};
+
 
 pub const TASKSTATS_CMD_ATTR_PID: u16 = 1;
 pub const TASKSTATS_CMD_ATTR_TGID: u16 = 2;
@@ -87,7 +89,7 @@ impl<'a, T: AsRef<[u8]> + ?Sized> Parseable<NlaBuffer<&'a T>> for TaskStatsCmdAt
 
 
 /// Event code definition 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TaskStatsEventAttrs {
     /// process id
 	Pid(i32),
@@ -111,17 +113,18 @@ const TASKSTATS_TYPE_AGGR_TGID:u16 = 5;	/* contains tgid + stats */
 const TASKSTATS_TYPE_NULL:u16 = 6;		/* contains nothing */
 
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 /// Taststats + additional information
 pub struct Statistics
 {
-    tgid:       i32,
-    pid:        i32,
-    data:       struct_tasksstats
+    pub tgid:           i32,
+    pub pid:            i32,
+    pub timestamp_ns:   u64,
+    pub data:           struct_tasksstats
 }
 
 #[repr(C)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 ///the actual struct containing statistics
 /* 
     created by bindgen
@@ -219,6 +222,19 @@ fn parse_sub_nlas(payload: &[u8]) -> Result< Statistics, DecodeError>
     let mut pid = -1;
     let mut tgid = -1;
 
+    let mut time = libc::timespec {
+        tv_sec: 0,
+        tv_nsec: 0,
+    };
+
+    let timestamp_ns = if unsafe { libc::clock_gettime(libc::CLOCK_MONOTONIC_COARSE, &mut time) } == 0
+    {
+        (time.tv_sec * 1000000000 + time.tv_nsec) as u64
+    }
+    else
+        {0};
+
+
     for sub_nla in sub_nlas.iter()
     {
         match sub_nla
@@ -227,6 +243,7 @@ fn parse_sub_nlas(payload: &[u8]) -> Result< Statistics, DecodeError>
             TaskStatsEventAttrs::TGid(x) => tgid = *x,
             TaskStatsEventAttrs::Stats(x) => return Ok(Statistics {
                 pid, tgid,
+                timestamp_ns,
                 data: *x
             }),
             _ => ()

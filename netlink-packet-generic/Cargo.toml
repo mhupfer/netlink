@@ -16,6 +16,7 @@ libc = "0.2.86"
 byteorder = "1.4.2"
 netlink-packet-core = "0.4"
 netlink-packet-utils = "0.5"
+serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
 netlink-sys = { path = "../netlink-sys", version = "0.8" }
