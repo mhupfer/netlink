@@ -304,7 +304,7 @@ pub struct ConnectorResponse {
 /* enum KernelConnectorEvent       */
 /***********************************/
 #[allow(non_camel_case_types)]
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum KernelConnectorEvent {
     none,
     fork(ForkProcEvent),
@@ -327,7 +327,7 @@ type __kernel_pid_t = i32;
 /****************************/
 /* 	ForkProcEvent       	*/
 /****************************/
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ForkProcEvent
 {
     pub parent_pid:     __kernel_pid_t,
@@ -340,7 +340,7 @@ pub struct ForkProcEvent
 /****************************/
 /* 	ExecProcEvent       	*/
 /****************************/
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ExecProcEvent
 {
     pub process_pid:    __kernel_pid_t,
@@ -351,7 +351,7 @@ pub struct ExecProcEvent
 /****************************/
 /* 	UIDProcEvent          	*/
 /****************************/
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct UIDProcEvent
 {
     pub process_pid:    __kernel_pid_t,
@@ -364,7 +364,7 @@ pub struct UIDProcEvent
 /****************************/
 /* 	GIDProcEvent          	*/
 /****************************/
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct GIDProcEvent
 {
     pub process_pid:    __kernel_pid_t,
@@ -377,7 +377,7 @@ pub struct GIDProcEvent
 /****************************/
 /* SIDProcEvent          	*/
 /****************************/
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct SIDProcEvent
 {
     pub process_tgid:   __kernel_pid_t,
@@ -388,7 +388,7 @@ pub struct SIDProcEvent
 /****************************/
 /* 	PtraceProcEvent       	*/
 /****************************/
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PtraceProcEvent
 {
     pub process_pid:    __kernel_pid_t,
@@ -401,7 +401,7 @@ pub struct PtraceProcEvent
 /****************************/
 /* CommProcEvent          	*/
 /****************************/
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct CommProcEvent
 {
     pub process_pid:    __kernel_pid_t,
@@ -427,7 +427,7 @@ impl fmt::Debug for CommProcEvent {
 /****************************/
 /* 	CoredumpProcEvent     	*/
 /****************************/
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CoredumpProcEvent
 {
     pub process_pid:    __kernel_pid_t,
@@ -440,7 +440,7 @@ pub struct CoredumpProcEvent
 /****************************/
 /* 	ExitProcEvent       	*/
 /****************************/
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ExitProcEvent
 {
     pub process_pid:    __kernel_pid_t,
